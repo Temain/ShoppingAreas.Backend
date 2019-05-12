@@ -39,6 +39,7 @@ namespace ShoppingAreas.Services
 			{
 				Id = Guid.NewGuid(),
 				Name = area.Name,
+				Address = area.Address,
 				CreatedAt = DateTime.UtcNow
 			};
 
@@ -56,6 +57,7 @@ namespace ShoppingAreas.Services
 				.SingleOrDefaultAsync(cancellationToken);
 
 			dbArea.Name = area.Name;
+			dbArea.Address = area.Address;
 			dbArea.UpdatedAt = DateTime.UtcNow;
 
 			_context.Entry(dbArea).State = EntityState.Modified;
@@ -80,10 +82,12 @@ namespace ShoppingAreas.Services
 		private IQueryable<AreaView> GetAreasQuery()
 		{
 			var query = _context.Areas
+				.Where(a => a.DeletedAt == null)
 				.Select(a => new AreaView
 				{
 					Id = a.Id,
 					Name = a.Name,
+					Address = a.Address,
 					CreatedAt = a.CreatedAt,
 					UpdatedAt = a.UpdatedAt,
 					DeletedAt = a.DeletedAt

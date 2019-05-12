@@ -13,6 +13,13 @@ namespace ShoppingAreas.WebApi.Mappings
 			CreateMap<VmRegistration, User>();
 
 			CreateMap<AreaView, VmArea>();
+			CreateMap<VmArea, AreaView>();
+
+			CreateMap<EquipmentView, VmEquipment>();
+			CreateMap<VmEquipment, EquipmentView>();
+
+			CreateMap<ProductView, VmProduct>();
+			CreateMap<VmProduct, ProductView>();
 		}
 	}
 }

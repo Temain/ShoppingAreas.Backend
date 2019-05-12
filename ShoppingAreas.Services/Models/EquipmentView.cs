@@ -1,12 +1,15 @@
 ﻿using System;
 
-namespace ShoppingAreas.WebApi.ViewModels
+namespace ShoppingAreas.Services.Models
 {
-	public class VmArea
+	public class EquipmentView
 	{
 		public Guid Id { get; set; }
 		public string Name { get; set; }
-		public string Address { get; set; }
+
+		public decimal Length { get; set; }
+		public decimal Width { get; set; }
+
 		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? UpdatedAt { get; set; }
 		public DateTimeOffset? DeletedAt { get; set; }
