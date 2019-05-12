@@ -184,6 +184,7 @@ namespace ShoppingAreas.WebApi
 			});
 
 			app.UseHttpsRedirection();
+			app.UseAuthentication();
 			app.UseMvc();
 		}
 	}
