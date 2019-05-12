@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShoppingAreas.Domain.Configurations;
 using ShoppingAreas.Domain.Interceptors;
 using ShoppingAreas.Domain.Models;
 using ShoppingAreas.Helpers;
@@ -12,6 +13,10 @@ namespace ShoppingAreas.Domain
 	public class ApplicationDbContext : IdentityDbContext<User, Role, long>
 	{
 		public DbSet<Area> Areas { get; set; }
+		public DbSet<Equipment> Equipments { get; set; }
+		public DbSet<EquipmentArea> EquipmentAreas { get; set; }
+		public DbSet<Product> Products { get; set; }
+		public DbSet<ProductArea> ProductAreas { get; set; }
 
 		private readonly CommandListener _adapter;
 
@@ -26,7 +31,11 @@ namespace ShoppingAreas.Domain
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			// modelBuilder.ApplyConfiguration(new AreaConfiguration());
+			modelBuilder.ApplyConfiguration(new AreaConfiguration());
+			modelBuilder.ApplyConfiguration(new EquipmentConfiguration());
+			modelBuilder.ApplyConfiguration(new EquipmentAreaConfiguration());
+			modelBuilder.ApplyConfiguration(new ProductConfiguration());
+			modelBuilder.ApplyConfiguration(new ProductAreaConfiguration());
 
 			base.OnModelCreating(modelBuilder);
 

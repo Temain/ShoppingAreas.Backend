@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShoppingAreas.Services.Interfaces;
@@ -12,6 +13,7 @@ using ShoppingAreas.WebApi.ViewModels;
 
 namespace ShoppingAreas.WebApi.Controllers
 {
+	[Authorize(Policy = "ApiUser")]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class AreasController : ControllerBase

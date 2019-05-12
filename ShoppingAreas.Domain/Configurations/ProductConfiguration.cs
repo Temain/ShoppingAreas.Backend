@@ -4,11 +4,11 @@ using ShoppingAreas.Domain.Models;
 
 namespace ShoppingAreas.Domain.Configurations
 {
-	public class AreaConfiguration : IEntityTypeConfiguration<Area>
+	public class ProductConfiguration : IEntityTypeConfiguration<Product>
 	{
-		public void Configure(EntityTypeBuilder<Area> builder)
+		public void Configure(EntityTypeBuilder<Product> builder)
 		{
-			builder.ToTable("dbo_area");
+			builder.ToTable("dbo_product");
 
 			builder.HasKey(p => p.Id);
 
