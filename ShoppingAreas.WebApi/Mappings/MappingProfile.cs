@@ -20,6 +20,8 @@ namespace ShoppingAreas.WebApi.Mappings
 
 			CreateMap<ProductView, VmProduct>();
 			CreateMap<VmProduct, ProductView>();
+
+			CreateMap<AreaReportView, VmAreaReport>();
 		}
 	}
 }

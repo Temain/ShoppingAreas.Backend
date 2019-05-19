@@ -14,67 +14,53 @@ namespace ShoppingAreas.Services
 	public class ReportsService : IReportsService
 	{
 		private readonly ApplicationDbContext _context;
-		private readonly IAreaService _areaService;
 
-		public ReportsService(ApplicationDbContext context, IAreaService areaService)
+		public ReportsService(ApplicationDbContext context)
 		{
 			_context = context;
-			_areaService = areaService;
 		}
 
 		public async Task<IEnumerable<AreaReportView>> GetReports(CancellationToken cancellationToken)
 		{
-			var areaQuery = _areaService.GetAreas();
-			var areaIdsQuery = areaQuery.Select(a => a.Id);
-			var areaReports = await areaQuery
-				.Select(a => new AreaReportView
-				{
-					Id = a.Id,
-					Name = a.Name,
-					Address = a.Address,
-					TotalArea = a.TotalArea
-				})
+			var areaReports = await GetAreaReportQuery()
 				.ToListAsync(cancellationToken);
-
-			var eqw = _context.EquipmentAreas.Where(eq => true);
-			var eqw1 = await eqw.ToListAsync(cancellationToken);
-
-			var equipmentArea = await _context.EquipmentAreas
-				.Include(eq => eq.Equipment)
-				.Include(eq => eq.Area)
-				.Where(eq => areaIdsQuery.Contains(eq.AreaId))
-				.GroupBy(g => g.AreaId)
-				.ToDictionaryAsync(eq => eq.Key
-					, v => v.Sum(i => i.Equipment.Length * i.Equipment.Width * i.Count));
-
-			var pr = _context.ProductAreas.Where(eq => true);
-			var pr1 = await pr.ToListAsync(cancellationToken);
-
-			var productArea = await _context.ProductAreas
-				.Include(eq => eq.Product)
-				.Include(eq => eq.Area)
-				.Where(pa => areaIdsQuery.Contains(pa.AreaId))
-				.GroupBy(g => g.AreaId)
-				.ToDictionaryAsync(eq => eq.Key
-					, v => v.Sum(i => i.Length * i.Width));
 
 			foreach (var areaReport in areaReports)
 			{
-				if (equipmentArea.ContainsKey(areaReport.Id))
-				{
-					areaReport.EquipmentArea = equipmentArea[areaReport.Id];
-				}
-
-				if (productArea.ContainsKey(areaReport.Id))
-				{
-					areaReport.ProductArea = productArea[areaReport.Id];
-				}
-
 				areaReport.CoefInstall = areaReport.EquipmentArea / areaReport.TotalArea;
 				areaReport.CoefDemo = areaReport.ProductArea / areaReport.TotalArea;
 			}
 
 			return areaReports;
+		}
+
+		public async Task<AreaReportView> GetReport(Guid id, CancellationToken cancellationToken)
+		{
+			var areaReport = await GetAreaReportQuery()
+				.SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
+
+			areaReport.CoefInstall = areaReport.EquipmentArea / areaReport.TotalArea;
+			areaReport.CoefDemo = areaReport.ProductArea / areaReport.TotalArea;
+
+			return areaReport;
+		}
+
+		private IQueryable<AreaReportView> GetAreaReportQuery()
+		{
+			return _context.Areas
+				.Include(a => a.EquipmentAreas/*.Select(ea => ea.Equipment)*/)
+				.Include(a => a.ProductAreas/*.Select(pa => pa.Product)*/)
+				.Select(a => new AreaReportView
+				{
+					Id = a.Id,
+					Name = a.Name,
+					Address = a.Address,
+					TotalArea = a.TotalArea,
+					EquipmentArea = a.EquipmentAreas
+						.Sum(eq => eq.Equipment.Length * eq.Equipment.Width * eq.Count),
+					ProductArea = a.ProductAreas
+						.Sum(pa => pa.Length * pa.Width)
+				});
 		}
 	}
 }

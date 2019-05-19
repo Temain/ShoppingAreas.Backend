@@ -24,7 +24,7 @@ namespace ShoppingAreas.WebApi.Controllers
 			_mapper = mapper;
 		}
 
-		// GET: api/Areas
+		// GET: api/Reports
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<VmArea>>> GetReports(CancellationToken cancellationToken)
 		{
@@ -34,20 +34,19 @@ namespace ShoppingAreas.WebApi.Controllers
 			return Ok(vmReports);
 		}
 
-		// GET: api/Areas/5
+		// GET: api/Reports/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<VmArea>> GetReport(Guid id, CancellationToken cancellationToken)
 		{
-			//var area = await _areaService.GetAreas(a => a.Id == id)
-			//	.SingleOrDefaultAsync(cancellationToken);
-			//if (area == null)
-			//{
-			//	return NotFound();
-			//}
+			var areaReport = await _reportsService.GetReport(id, cancellationToken);
+			if (areaReport == null)
+			{
+				return NotFound();
+			}
 
-			//var vmArea = _mapper.Map<VmArea>(area);
+			var vmReport = _mapper.Map<VmAreaReport>(areaReport);
 
-			return Ok(/*vmArea*/);
+			return Ok(vmReport);
 		}
 	}
 }
