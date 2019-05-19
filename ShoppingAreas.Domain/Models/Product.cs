@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ShoppingAreas.Domain.Models
 {
@@ -12,5 +11,7 @@ namespace ShoppingAreas.Domain.Models
 		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? UpdatedAt { get; set; }
 		public DateTimeOffset? DeletedAt { get; set; }
+
+		public ICollection<ProductArea> ProductAreas { get; set; }
 	}
 }

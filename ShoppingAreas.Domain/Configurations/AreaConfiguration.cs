@@ -15,6 +15,7 @@ namespace ShoppingAreas.Domain.Configurations
 			builder.Property(p => p.Id).HasColumnName("id");
 			builder.Property(p => p.Name).HasColumnName("name");
 			builder.Property(p => p.Address).HasColumnName("address");
+			builder.Property(p => p.TotalArea).HasColumnName("total_area");
 			builder.Property(p => p.CreatedAt).HasColumnName("created_at");
 			builder.Property(p => p.UpdatedAt).HasColumnName("updated_at").IsRequired(false);
 			builder.Property(p => p.DeletedAt).HasColumnName("deleted_at").IsRequired(false);

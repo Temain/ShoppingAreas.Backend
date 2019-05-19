@@ -21,6 +21,14 @@ namespace ShoppingAreas.Domain.Configurations
 			builder.Property(p => p.CreatedAt).HasColumnName("created_at");
 			builder.Property(p => p.UpdatedAt).HasColumnName("updated_at").IsRequired(false);
 			builder.Property(p => p.DeletedAt).HasColumnName("deleted_at").IsRequired(false);
+
+			builder.HasOne(p => p.Area)
+				.WithMany(p => p.ProductAreas)
+				.HasForeignKey(p => p.AreaId);
+
+			builder.HasOne(p => p.Product)
+				.WithMany(p => p.ProductAreas)
+				.HasForeignKey(p => p.ProductId);
 		}
 	}
 }

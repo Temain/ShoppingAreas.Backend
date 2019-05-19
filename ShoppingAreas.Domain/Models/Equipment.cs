@@ -15,5 +15,7 @@ namespace ShoppingAreas.Domain.Models
 		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? UpdatedAt { get; set; }
 		public DateTimeOffset? DeletedAt { get; set; }
+
+		public ICollection<EquipmentArea> EquipmentAreas { get; set; }
 	}
 }

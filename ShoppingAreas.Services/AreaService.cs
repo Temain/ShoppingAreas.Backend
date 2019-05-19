@@ -39,6 +39,7 @@ namespace ShoppingAreas.Services
 			{
 				Id = Guid.NewGuid(),
 				Name = area.Name,
+				TotalArea = area.TotalArea,
 				Address = area.Address,
 				CreatedAt = DateTime.UtcNow
 			};
@@ -58,6 +59,7 @@ namespace ShoppingAreas.Services
 
 			dbArea.Name = area.Name;
 			dbArea.Address = area.Address;
+			dbArea.TotalArea = area.TotalArea;
 			dbArea.UpdatedAt = DateTime.UtcNow;
 
 			_context.Entry(dbArea).State = EntityState.Modified;
@@ -88,6 +90,7 @@ namespace ShoppingAreas.Services
 					Id = a.Id,
 					Name = a.Name,
 					Address = a.Address,
+					TotalArea = a.TotalArea,
 					CreatedAt = a.CreatedAt,
 					UpdatedAt = a.UpdatedAt,
 					DeletedAt = a.DeletedAt

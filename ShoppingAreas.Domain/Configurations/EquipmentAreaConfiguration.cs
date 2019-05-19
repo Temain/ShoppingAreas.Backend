@@ -9,7 +9,7 @@ namespace ShoppingAreas.Domain.Configurations
 		public void Configure(EntityTypeBuilder<EquipmentArea> builder)
 		{
 			builder.ToTable("tx_equipment_area");
-
+			
 			builder.HasKey(p => new { p.AreaId, p.EquipmentId });
 
 			builder.Property(p => p.AreaId).HasColumnName("id_area");
@@ -19,6 +19,14 @@ namespace ShoppingAreas.Domain.Configurations
 			builder.Property(p => p.CreatedAt).HasColumnName("created_at");
 			builder.Property(p => p.UpdatedAt).HasColumnName("updated_at").IsRequired(false);
 			builder.Property(p => p.DeletedAt).HasColumnName("deleted_at").IsRequired(false);
+
+			builder.HasOne(p => p.Area)
+				.WithMany(p => p.EquipmentAreas)
+				.HasForeignKey(p => p.AreaId);
+
+			builder.HasOne(p => p.Equipment)
+				.WithMany(p => p.EquipmentAreas)
+				.HasForeignKey(p => p.EquipmentId);
 		}
 	}
 }

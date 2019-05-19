@@ -66,6 +66,7 @@ namespace ShoppingAreas.WebApi
 			services.AddTransient<IAreaService, AreaService>();
 			services.AddTransient<IEquipmentService, EquipmentService>();
 			services.AddTransient<IProductService, ProductService>();
+			services.AddTransient<IReportsService, ReportsService>();
 
 			ConfigureAuth(services);
 
