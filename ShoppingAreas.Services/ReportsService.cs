@@ -20,7 +20,7 @@ namespace ShoppingAreas.Services
 			_context = context;
 		}
 
-		public async Task<IEnumerable<AreaReportView>> GetReports(CancellationToken cancellationToken)
+		public async Task<IEnumerable<AreaReportView>> GetAreaReports(CancellationToken cancellationToken)
 		{
 			var areaReports = await GetAreaReportQuery()
 				.ToListAsync(cancellationToken);
@@ -34,7 +34,7 @@ namespace ShoppingAreas.Services
 			return areaReports;
 		}
 
-		public async Task<AreaReportView> GetReport(Guid id, CancellationToken cancellationToken)
+		public async Task<AreaReportView> GetAreaReport(Guid id, CancellationToken cancellationToken)
 		{
 			var areaReport = await GetAreaReportQuery()
 				.SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
@@ -48,8 +48,8 @@ namespace ShoppingAreas.Services
 		private IQueryable<AreaReportView> GetAreaReportQuery()
 		{
 			return _context.Areas
-				.Include(a => a.EquipmentAreas/*.Select(ea => ea.Equipment)*/)
-				.Include(a => a.ProductAreas/*.Select(pa => pa.Product)*/)
+				.Include(a => a.EquipmentAreas)
+				.Include(a => a.ProductAreas)
 				.Select(a => new AreaReportView
 				{
 					Id = a.Id,
@@ -60,6 +60,45 @@ namespace ShoppingAreas.Services
 						.Sum(eq => eq.Equipment.Length * eq.Equipment.Width * eq.Count),
 					ProductArea = a.ProductAreas
 						.Sum(pa => pa.Length * pa.Width)
+				});
+		}
+
+		public async Task<IEnumerable<ProductReportView>> GetProductReports(Guid areaId, CancellationToken cancellationToken)
+		{
+			var productReports = await GetProductReportQuery()
+				.Where(a => a.AreaId == areaId)
+				.ToListAsync(cancellationToken);
+
+			var productsArea = productReports.Sum(p => p.Length * p.Width);
+			var totalIncome = productReports.Sum(p => p.Income);
+			var totalProfit = productReports.Sum(p => p.Profit);
+			foreach (var product in productReports)
+			{
+				product.AreaPercent = Math.Round((product.Length * product.Width) / productsArea * 100, 2);
+				product.IncomePercent = Math.Round(product.Income / totalIncome * 100, 2);
+				product.ProfitPercent = Math.Round(product.Profit / totalProfit * 100, 2);
+				product.CoefIncome = Math.Round(product.IncomePercent / product.AreaPercent, 2);
+				product.CoefProfit = Math.Round(product.ProfitPercent / product.AreaPercent, 2);
+			}
+
+			return productReports;
+		}
+
+		private IQueryable<ProductReportView> GetProductReportQuery()
+		{
+			return _context.ProductAreas
+				.Include(p => p.Product)
+				.Include(p => p.Area)
+				.Select(p => new ProductReportView
+				{
+					Id = p.ProductId,
+					Name = p.Product.Name,
+					AreaId = p.AreaId,
+					TotalArea = p.Area.TotalArea,
+					Length = p.Length,
+					Width = p.Width,
+					Income = p.Income,
+					Profit = p.Profit
 				});
 		}
 	}

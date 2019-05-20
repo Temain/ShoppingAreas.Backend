@@ -8,7 +8,8 @@ namespace ShoppingAreas.Services.Interfaces
 {
 	public interface IReportsService
 	{
-		Task<IEnumerable<AreaReportView>> GetReports(CancellationToken cancellationToken);
-		Task<AreaReportView> GetReport(Guid id, CancellationToken cancellationToken);
+		Task<IEnumerable<AreaReportView>> GetAreaReports(CancellationToken cancellationToken);
+		Task<AreaReportView> GetAreaReport(Guid id, CancellationToken cancellationToken);
+		Task<IEnumerable<ProductReportView>> GetProductReports(Guid areaId, CancellationToken cancellationToken);
 	}
 }

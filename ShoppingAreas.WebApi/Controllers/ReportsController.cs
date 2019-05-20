@@ -24,21 +24,22 @@ namespace ShoppingAreas.WebApi.Controllers
 			_mapper = mapper;
 		}
 
-		// GET: api/Reports
+		// GET: api/Reports/Area
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<VmArea>>> GetReports(CancellationToken cancellationToken)
+		[Route("Area")]
+		public async Task<ActionResult<IEnumerable<VmArea>>> GetAreaReports(CancellationToken cancellationToken)
 		{
-			var reports = await _reportsService.GetReports(cancellationToken);
+			var reports = await _reportsService.GetAreaReports(cancellationToken);
 			var vmReports = _mapper.Map<IEnumerable<VmAreaReport>>(reports);
 
 			return Ok(vmReports);
 		}
 
-		// GET: api/Reports/5
-		[HttpGet("{id}")]
-		public async Task<ActionResult<VmArea>> GetReport(Guid id, CancellationToken cancellationToken)
+		// GET: api/Reports/Area/5
+		[HttpGet("Area/{id}")]
+		public async Task<ActionResult<VmArea>> GetAreaReport(Guid id, CancellationToken cancellationToken)
 		{
-			var areaReport = await _reportsService.GetReport(id, cancellationToken);
+			var areaReport = await _reportsService.GetAreaReport(id, cancellationToken);
 			if (areaReport == null)
 			{
 				return NotFound();
@@ -47,6 +48,16 @@ namespace ShoppingAreas.WebApi.Controllers
 			var vmReport = _mapper.Map<VmAreaReport>(areaReport);
 
 			return Ok(vmReport);
+		}
+
+		// GET: api/Reports/Product/5
+		[HttpGet("Product/{id}")]
+		public async Task<ActionResult<VmArea>> GetProductReport(Guid id, CancellationToken cancellationToken)
+		{
+			var productReports = await _reportsService.GetProductReports(id, cancellationToken);
+			var vmReports = _mapper.Map<IEnumerable<VmProductReport>>(productReports);
+
+			return Ok(vmReports);
 		}
 	}
 }
