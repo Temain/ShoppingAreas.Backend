@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,7 @@ using ShoppingAreas.Domain.Models;
 using ShoppingAreas.Services;
 using ShoppingAreas.Services.Interfaces;
 using ShoppingAreas.Web.Extensions;
+using ShoppingAreas.Web.Services;
 using ShoppingAreas.WebApi.Filters;
 using ShoppingAreas.WebApi.Helpers;
 using ShoppingAreas.WebApi.Mappings;
@@ -48,7 +51,7 @@ namespace ShoppingAreas.WebApi
 				options.AddPolicy("AllowSpecificMethods",
 					option =>
 					{
-						option.WithOrigins("http://localhost:4200")
+						option.WithOrigins("http://localhost:4200", "https://shoppingareaswebapi20190526023049.azurewebsites.net")
 							.AllowAnyMethod()
 							.AllowCredentials()
 							.AllowAnyHeader();
@@ -67,6 +70,7 @@ namespace ShoppingAreas.WebApi
 			services.AddTransient<IEquipmentService, EquipmentService>();
 			services.AddTransient<IProductService, ProductService>();
 			services.AddTransient<IReportsService, ReportsService>();
+			services.AddTransient<IImageService, ImageService>();
 
 			ConfigureAuth(services);
 
@@ -115,6 +119,11 @@ namespace ShoppingAreas.WebApi
 				app.UseHsts();
 			}
 
+			var options = new DefaultFilesOptions();
+			options.DefaultFileNames.Clear();
+			options.DefaultFileNames.Add("index.html");
+			app.UseDefaultFiles(options);
+
 			// Enable middleware to serve generated Swagger as a JSON endpoint.
 			app.UseSwagger();
 
@@ -123,12 +132,22 @@ namespace ShoppingAreas.WebApi
 			app.UseSwaggerUI(c =>
 			{
 				c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-				c.RoutePrefix = string.Empty;
+				c.RoutePrefix = "docs";
 			});
 
+			app.UseStaticFiles();
 			app.UseHttpsRedirection();
 			app.UseAuthentication();
 			app.UseMvc();
+			app.Run(async (context) =>
+			{
+				context.Response.ContentType = "text/html";
+				var indexPath = Path.Combine(env.WebRootPath, "index.html");
+				if (File.Exists(indexPath))
+				{
+					await context.Response.SendFileAsync(indexPath);
+				}
+			});
 		}
 
 		#region Auth

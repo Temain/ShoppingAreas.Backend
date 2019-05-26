@@ -22,7 +22,7 @@ namespace ShoppingAreas.Services
 
 		public async Task<IEnumerable<AreaReportView>> GetAreaReports(CancellationToken cancellationToken)
 		{
-			var areaReports = await GetAreaReportQuery()
+			var areaReports = await GetAreaReportQuery(false)
 				.ToListAsync(cancellationToken);
 
 			foreach (var areaReport in areaReports)
@@ -36,7 +36,7 @@ namespace ShoppingAreas.Services
 
 		public async Task<AreaReportView> GetAreaReport(Guid id, CancellationToken cancellationToken)
 		{
-			var areaReport = await GetAreaReportQuery()
+			var areaReport = await GetAreaReportQuery(false)
 				.SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
 
 			areaReport.CoefInstall = areaReport.EquipmentArea / areaReport.TotalArea;
@@ -45,11 +45,12 @@ namespace ShoppingAreas.Services
 			return areaReport;
 		}
 
-		private IQueryable<AreaReportView> GetAreaReportQuery()
+		private IQueryable<AreaReportView> GetAreaReportQuery(bool showDeleted)
 		{
 			return _context.Areas
 				.Include(a => a.EquipmentAreas)
 				.Include(a => a.ProductAreas)
+				.Where(ar => showDeleted || ar.DeletedAt == null)
 				.Select(a => new AreaReportView
 				{
 					Id = a.Id,

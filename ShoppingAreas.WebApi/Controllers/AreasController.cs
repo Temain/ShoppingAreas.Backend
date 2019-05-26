@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,8 +8,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ShoppingAreas.Domain.Models;
+using ShoppingAreas.Helpers;
 using ShoppingAreas.Services.Interfaces;
 using ShoppingAreas.Services.Models;
+using ShoppingAreas.Web.Services;
+using ShoppingAreas.Web.ViewModels;
 using ShoppingAreas.WebApi.ViewModels;
 
 namespace ShoppingAreas.WebApi.Controllers
@@ -19,11 +24,13 @@ namespace ShoppingAreas.WebApi.Controllers
 	public class AreasController : ControllerBase
 	{
 		private readonly IAreaService _areaService;
+		private readonly IImageService _imageService; 
 		private readonly IMapper _mapper;
 
-		public AreasController(IAreaService areaService, IMapper mapper)
+		public AreasController(IAreaService areaService, IImageService imageService, IMapper mapper)
 		{
 			_areaService = areaService;
+			_imageService = imageService;
 			_mapper = mapper;
 		}
 
@@ -41,6 +48,20 @@ namespace ShoppingAreas.WebApi.Controllers
 
 			var vmAreas = _mapper.Map<IEnumerable<VmArea>>(areas);
 
+			// Изображения
+			try
+			{
+				ParallelOptions parallelOptions = new ParallelOptions();
+				parallelOptions.MaxDegreeOfParallelism = Environment.ProcessorCount * 2;
+				Parallel.ForEach(vmAreas, parallelOptions, async vmArea =>
+				{
+					var imagePath = vmArea.ImagePath;
+					var imageType = vmArea.ImageType;
+					vmArea.Image = await GetImage(imagePath, imageType, cancellationToken);
+				});
+			}
+			catch { }	
+
 			return Ok(vmAreas);
 		}
 
@@ -57,6 +78,10 @@ namespace ShoppingAreas.WebApi.Controllers
 
 			var vmArea = _mapper.Map<VmArea>(area);
 
+			var imagePath = vmArea.ImagePath;
+			var imageType = vmArea.ImageType;
+			vmArea.Image = await GetImage(imagePath, imageType, cancellationToken);
+
 			return Ok(vmArea);
 		}
 
@@ -70,7 +95,12 @@ namespace ShoppingAreas.WebApi.Controllers
 			}
 
 			var areaView = _mapper.Map<AreaView>(vmArea);
-			await _areaService.UpdateAreaAsync(areaView, cancellationToken);
+			var area = await _areaService.UpdateAreaAsync(areaView, cancellationToken);
+
+			// Загрузка изображения
+			var vmImage = vmArea.Image;
+			var imageHash = areaView.ImageHash;
+			await UploadImage(area, vmImage, imageHash, cancellationToken);
 
 			try
 			{
@@ -97,6 +127,12 @@ namespace ShoppingAreas.WebApi.Controllers
 		{
 			var areaView = _mapper.Map<AreaView>(vmArea);
 			var dbArea = await _areaService.AddAreaAsync(areaView, cancellationToken);
+
+			// Загрузка изображения
+			var vmImage = vmArea.Image;
+			var imageHash = areaView.ImageHash;
+			await UploadImage(dbArea, vmImage, imageHash, cancellationToken);
+
 			await _areaService.CommitAsync(cancellationToken);
 
 			vmArea.Id = dbArea.Id;
@@ -126,6 +162,41 @@ namespace ShoppingAreas.WebApi.Controllers
 		{
 			return await _areaService.GetAreas()
 				.AnyAsync(e => e.Id == id, cancellationToken);
+		}
+
+		private async Task<VmFile> GetImage(string imagePath, string imageType, CancellationToken cancellationToken)
+		{
+			if (!string.IsNullOrWhiteSpace(imagePath))
+			{
+				var image = await _imageService.GetImageAsync(imagePath, cancellationToken);
+				return new VmFile
+				{
+					FileType = imageType,
+					FileData = $"data:{imageType};base64,{image}"
+				};
+			}
+
+			return null;
+		}
+
+		private async Task UploadImage(Area area, VmFile vmImage, string imageHash, CancellationToken cancellationToken)
+		{
+			// Загрузка изображения
+			if (vmImage != null && !string.IsNullOrWhiteSpace(vmImage.FileData))
+			{
+				var newImage = vmImage.FileData;
+				var newImageHash = Md5Hash.GetHashString(newImage);
+
+				if (imageHash != newImageHash)
+				{
+					var extention = Path.GetExtension(vmImage.FileName);
+					var imagePath = $"/images/areas/{area.Id}{extention}";
+					await _imageService.UploadImageAsync(imagePath, newImage, cancellationToken);
+					area.ImagePath = imagePath;
+					area.ImageType = vmImage.FileType;
+					area.ImageHash = newImageHash;
+				}
+			}
 		}
 	}
 }
